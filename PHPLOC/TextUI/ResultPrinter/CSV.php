@@ -59,78 +59,53 @@ class PHPLOC_TextUI_ResultPrinter_CSV
      * @param string $filename
      * @param array  $count
      */
-    public function printResult($filename, array $count)
+    public function printResult($filename, array $count, $keepUnlabeled = false)
     {
-        $keys   = array();
-        $values = array();
+        $labels = array(
+            'directories'           => 'Directories',
+            'files'                 => 'Files',
+            'loc'                   => 'Lines of Code (LOC)',
+            'ccnByLoc'              => 'Cyclomatic Complexity / Lines of Code',
+            'cloc'                  => 'Comment Lines of Code (CLOC)',
+            'ncloc'                 => 'Non-Comment Lines of Code (NCLOC)',
+            'namespaces'            => 'Namespaces',
+            'interfaces'            => 'Interfaces',
+            'classes'               => 'Classes',
+            'abstractClasses'       => 'Abstract Classes',
+            'concreteClasses'       => 'Concrete Classes',
+            'nclocByNoc'            => 'Average Class Length (NCLOC)',
+            'methods'               => 'Methods',
+            'nonStaticMethods'      => 'Non-Static Methods',
+            'staticMethods'         => 'Static Methods',
+            'publicMethods'         => 'Public Methods',
+            'nonPublicMethods'      => 'Non-Public Methods',
+            'nclocByNom'            => 'Average Method Length (NCLOC)',
+            'ccnByNom'              => 'Cyclomatic Complexity / Number of Methods',
+            'anonymousFunctions'    => 'Anonymous Functions',
+            'functions'             => 'Functions',
+            'constants'             => 'Constants',
+            'globalConstants'       => 'Global Constants',
+            'classConstants'        => 'Class Constants',
+            'eloc'                  => 'Executable Lines of Code (ELOC)',
+            'testClasses'           => 'Test Clases',
+            'testMethods'           => 'Test Methods',
+        );
 
-        if ($count['directories'] > 0) {
-            $keys[]   = 'Directories';
-            $values[] = $count['directories'];
-            $keys[]   = 'Files';
-            $values[] = $count['files'];
+        // Values reported were no label was defined
+        $missingLabels = array_diff_key($count, $labels);
+
+        if ($keepUnlabeled){ // Adds the missing labels
+            array_walk($missingLabels, function(&$label, $key) { $label = $key; });
+            $labels = array_merge($labels, $missingLabels);
+        } else { // Removes the counts without label
+            $count = array_diff_key($count, $missingLabels);
         }
 
-        $keys[]   = 'Lines of Code (LOC)';
-        $values[] = $count['loc'];
-        $keys[]   = 'Cyclomatic Complexity / Lines of Code';
-        $values[] = $count['ccnByLoc'];
-
-        if (isset($count['eloc'])) {
-            $keys[]   = 'Executable Lines of Code (ELOC)';
-            $values[] = $count['eloc'];
-        }
-
-        $keys[]   = 'Comment Lines of Code (CLOC)';
-        $values[] = $count['cloc'];
-        $keys[]   = 'Non-Comment Lines of Code (NCLOC)';
-        $values[] = $count['ncloc'];
-        $keys[]   = 'Namespaces';
-        $values[] = $count['namespaces'];
-        $keys[]   = 'Interfaces';
-        $values[] = $count['interfaces'];
-        $keys[]   = 'Classes';
-        $values[] = $count['classes'];
-        $keys[]   = 'Abstract Classes';
-        $values[] = $count['abstractClasses'];
-        $keys[]   = 'Concrete Classes';
-        $values[] = $count['concreteClasses'];
-        $keys[]   = 'Average Class Length (NCLOC)';
-        $values[] = $count['nclocByNoc'];
-        $keys[]   = 'Methods';
-        $values[] = $count['methods'];
-        $keys[]   = 'Non-Static Methods';
-        $values[] = $count['nonStaticMethods'];
-        $keys[]   = 'Static Methods';
-        $values[] = $count['staticMethods'];
-        $keys[]   = 'Public Methods';
-        $values[] = $count['publicMethods'];
-        $keys[]   = 'Non-Public Methods';
-        $values[] = $count['nonPublicMethods'];
-        $keys[]   = 'Average Method Length (NCLOC)';
-        $values[] = $count['nclocByNom'];
-        $keys[]   = 'Cyclomatic Complexity / Number of Methods';
-        $values[] = $count['ccnByNom'];
-        $keys[]   = 'Anonymous Functions';
-        $values[] = $count['anonymousFunctions'];
-        $keys[]   = 'Functions';
-        $values[] = $count['functions'];
-        $keys[]   = 'Constants';
-        $values[] = $count['constants'];
-        $keys[]   = 'Global Constants';
-        $values[] = $count['globalConstants'];
-        $keys[]   = 'Class Constants';
-        $values[] = $count['classConstants'];
-
-        if (isset($count['testClasses'])) {
-            $keys[]   = 'Test Clases';
-            $values[] = $count['testClasses'];
-            $keys[]   = 'Test Methods';
-            $values[] = $count['testMethods'];
-        }
+        $usedLabels = array_intersect_key($labels, $count);
+        $result = array_combine($usedLabels, $count);
 
         file_put_contents(
-          $filename, implode(',', $keys) . PHP_EOL . implode(',', $values)
+          $filename, implode(',', array_keys($result)) . PHP_EOL . implode(',', $result)
         );
     }
 }
