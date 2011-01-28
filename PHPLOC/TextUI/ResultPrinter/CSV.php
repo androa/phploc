@@ -102,7 +102,7 @@ class PHPLOC_TextUI_ResultPrinter_CSV
         }
 
         $usedLabels = array_intersect_key($labels, $count);
-        $result = array_combine($usedLabels, $count);
+        $result = array_merge($usedLabels, $count);
 
         file_put_contents(
           $filename, implode(',', array_keys($result)) . PHP_EOL . implode(',', $result)
